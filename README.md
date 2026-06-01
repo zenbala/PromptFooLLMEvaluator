@@ -1,4 +1,4 @@
-# 🧪 Promptfoo RAG Validation — Conversational AI Chatbot
+# 🧪 Promptfoo RAG Validation — RAG/LLM Evaluation
 
 A production-ready validation suite for **LLM/RAG chatbots**, testing both
 **OpenAI GPT-4o** and **Anthropic Claude Sonnet** side-by-side using
