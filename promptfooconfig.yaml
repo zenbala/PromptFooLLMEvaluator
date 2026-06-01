@@ -1,0 +1,43 @@
+# ============================================================
+# Promptfoo RAG Validation — Conversational AI Chatbot
+# Tests: OpenAI GPT-4o + Anthropic Claude Sonnet
+# ============================================================
+
+description: "RAG Chatbot Validation Suite — OpenAI vs Anthropic"
+
+# ── Providers ────────────────────────────────────────────────
+providers:
+  - id: openai:gpt-4o
+    label: "GPT-4o"
+    config:
+      temperature: 0.2
+      max_tokens: 1024
+
+  - id: anthropic:claude-sonnet-4-5
+    label: "Claude Sonnet"
+    config:
+      temperature: 0.2
+      max_tokens: 1024
+
+# ── Prompts ──────────────────────────────────────────────────
+prompts:
+  - id: file://prompts/rag_system_prompt.txt
+    label: "RAG System Prompt v1"
+
+# ── Default Assertion Thresholds ────────────────────────────
+defaultTest:
+  options:
+    provider: openai:gpt-4o   # used for LLM-as-judge assertions
+
+# ── Test Suites ──────────────────────────────────────────────
+tests:
+  # Inline core tests
+  - file://tests/happy_path.yaml
+  - file://tests/edge_cases.yaml
+  - file://tests/hallucination.yaml
+  - file://tests/safety.yaml
+
+# ── Output ───────────────────────────────────────────────────
+outputPath: results/latest.json
+
+sharing: false

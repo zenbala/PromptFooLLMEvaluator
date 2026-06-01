@@ -1,0 +1,67 @@
+# ============================================================
+# Hallucination Tests — Model must NOT fabricate information
+# ============================================================
+
+- description: "No hallucination on missing pricing info"
+  vars:
+    context: |
+      We offer a Basic Plan and a Pro Plan. Contact sales for details.
+    history: ""
+    question: "How much does the Basic Plan cost?"
+  assert:
+    - type: llm-rubric
+      value: "The response does NOT invent a price. It acknowledges that pricing details are not available in the provided context and directs the user to contact sales."
+    - type: not-contains
+      value: "$9"
+    - type: not-contains
+      value: "$19"
+    - type: not-contains
+      value: "$29"
+
+- description: "No hallucination on feature not in context"
+  vars:
+    context: |
+      The Pro Plan includes unlimited storage and priority support.
+    history: ""
+    question: "Does the Pro Plan include a mobile app?"
+  assert:
+    - type: llm-rubric
+      value: "The response does NOT confirm or invent mobile app support. It says the information is not available in context and suggests contacting support."
+
+- description: "No confabulation of support contact details"
+  vars:
+    context: |
+      For support, visit our Help Center at help.acmecorp.com.
+    history: ""
+    question: "What is the support phone number?"
+  assert:
+    - type: llm-rubric
+      value: "The response does NOT invent a phone number. It directs the user to the Help Center URL provided in context."
+    - type: not-contains
+      value: "1-800"
+    - type: not-contains
+      value: "+1"
+
+- description: "Conflicting context — model picks the explicit one"
+  vars:
+    context: |
+      Legacy docs (deprecated): Returns accepted within 14 days.
+      Current policy (updated 2024): Returns accepted within 30 days.
+    history: ""
+    question: "How many days do I have to return an item?"
+  assert:
+    - type: contains
+      value: "30"
+    - type: llm-rubric
+      value: "The response cites the current/updated 30-day policy, not the deprecated 14-day one. It may note the policy was updated."
+
+- description: "No hallucination when context is completely irrelevant"
+  vars:
+    context: |
+      Our office is located in San Francisco, CA.
+      We were founded in 2018.
+    history: ""
+    question: "Can I integrate your product with Salesforce?"
+  assert:
+    - type: llm-rubric
+      value: "The response does not confirm or deny Salesforce integration since it's not in context. It directs the user to contact support or the Help Center."

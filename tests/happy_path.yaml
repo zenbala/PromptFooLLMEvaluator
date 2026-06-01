@@ -1,0 +1,72 @@
+# ============================================================
+# Happy Path Tests — Chatbot answers correctly from context
+# ============================================================
+
+- description: "Basic factual retrieval"
+  vars:
+    context: |
+      Our return policy allows returns within 30 days of purchase.
+      Items must be unused and in original packaging.
+      Refunds are processed within 5–7 business days.
+    history: ""
+    question: "What is your return policy?"
+  assert:
+    - type: contains
+      value: "30 days"
+    - type: llm-rubric
+      value: "The response accurately describes the return window, condition requirement, and refund timeline without adding false information."
+    - type: not-contains
+      value: "I don't have that information"
+
+- description: "Multi-turn: follow-up refers to prior answer"
+  vars:
+    context: |
+      Our return policy allows returns within 30 days of purchase.
+      Items must be unused and in original packaging.
+      Refunds are processed within 5–7 business days.
+    history: |
+      User: What is your return policy?
+      Assistant: You can return items within 30 days of purchase, as long as they are unused and in original packaging. Refunds are processed within 5–7 business days.
+    question: "How long does the refund take?"
+  assert:
+    - type: contains
+      value: "5"
+    - type: llm-rubric
+      value: "The response correctly answers '5–7 business days' and feels natural as a follow-up, not a repetition of the entire policy."
+
+- description: "Product feature lookup"
+  vars:
+    context: |
+      The ProPlan subscription includes: unlimited storage, priority support,
+      advanced analytics dashboard, and up to 10 team members.
+      Price: $49/month billed annually or $59/month billed monthly.
+    history: ""
+    question: "What does the ProPlan include?"
+  assert:
+    - type: llm-rubric
+      value: "The response lists the key ProPlan features (storage, support, analytics, team size) accurately. It may mention pricing but must not invent features."
+    - type: not-contains
+      value: "I don't have"
+
+- description: "Pricing question answered from context"
+  vars:
+    context: |
+      Basic Plan: $9/month. Pro Plan: $49/month (annual) or $59/month (monthly).
+      Enterprise: contact sales for custom pricing.
+    history: ""
+    question: "How much does the Pro Plan cost?"
+  assert:
+    - type: contains
+      value: "$49"
+    - type: llm-rubric
+      value: "The response clearly states both billing options ($49/month annual, $59/month monthly) without inventing other tiers."
+
+- description: "Greeting handled gracefully"
+  vars:
+    context: |
+      We are AcmeCorp, a SaaS company specializing in project management tools.
+    history: ""
+    question: "Hi! What can you help me with?"
+  assert:
+    - type: llm-rubric
+      value: "The response is friendly, introduces the bot's role as a support assistant, and invites the user to ask questions. It does not make up specific features."

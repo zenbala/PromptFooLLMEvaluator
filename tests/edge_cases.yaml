@@ -1,0 +1,85 @@
+# ============================================================
+# Edge Case Tests — Boundary and stress conditions
+# ============================================================
+
+- description: "Question outside context scope → graceful fallback"
+  vars:
+    context: |
+      We offer three plans: Basic, Pro, and Enterprise.
+      Basic includes 5GB storage. Pro includes unlimited storage.
+    history: ""
+    question: "What is the capital of France?"
+  assert:
+    - type: llm-rubric
+      value: "The response politely declines to answer and directs the user to contact support or asks if they have a product-related question. It does NOT answer 'Paris'."
+    - type: not-contains
+      value: "Paris"
+
+- description: "Empty / blank question"
+  vars:
+    context: |
+      AcmeCorp support chatbot is ready to assist.
+    history: ""
+    question: "   "
+  assert:
+    - type: llm-rubric
+      value: "The response asks the user to clarify what they need help with. It does not error or produce a hallucinated answer."
+
+- description: "Very long conversation history doesn't lose context"
+  vars:
+    context: |
+      Cancellation policy: Users can cancel anytime. Cancellation takes effect
+      at the end of the current billing cycle. No partial refunds.
+    history: |
+      User: How do I reset my password?
+      Assistant: You can reset your password from the login page by clicking "Forgot Password."
+      User: What browsers are supported?
+      Assistant: We support Chrome, Firefox, Safari, and Edge.
+      User: Can I export my data?
+      Assistant: Yes, data export is available in Settings > Data > Export.
+      User: Is there a mobile app?
+      Assistant: Yes, we have iOS and Android apps available in their respective stores.
+    question: "If I cancel today, when does my subscription end?"
+  assert:
+    - type: llm-rubric
+      value: "The response correctly explains that cancellation takes effect at end of the billing cycle and no partial refunds are given. It stays relevant despite long history."
+    - type: contains
+      value: "billing cycle"
+
+- description: "Ambiguous pronoun reference resolved from history"
+  vars:
+    context: |
+      The Pro Plan costs $49/month annually.
+      The Basic Plan costs $9/month.
+    history: |
+      User: Tell me about the Pro Plan.
+      Assistant: The Pro Plan costs $49/month when billed annually and includes unlimited storage, priority support, and up to 10 team members.
+    question: "How much does it cost?"
+  assert:
+    - type: llm-rubric
+      value: "The response resolves 'it' to the Pro Plan from conversation history and gives the $49/month price. It does not ask 'which plan do you mean?'"
+    - type: contains
+      value: "$49"
+
+- description: "Numeric / special character question"
+  vars:
+    context: |
+      Support ticket IDs are 8-digit numbers starting with 10.
+      Example: ticket #10293847.
+    history: ""
+    question: "My ticket is #10293847, what's the status?"
+  assert:
+    - type: llm-rubric
+      value: "The response acknowledges the ticket number but explains it cannot look up live ticket status and directs the user to a support channel. It does NOT invent a status."
+
+- description: "Duplicate question in same session"
+  vars:
+    context: |
+      Refunds are processed within 5–7 business days.
+    history: |
+      User: How long do refunds take?
+      Assistant: Refunds are processed within 5–7 business days.
+    question: "How long do refunds take?"
+  assert:
+    - type: llm-rubric
+      value: "The response answers correctly (5–7 business days) without being awkward. It may briefly acknowledge the repeat but must not refuse to answer."

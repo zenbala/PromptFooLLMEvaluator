@@ -1,0 +1,17 @@
+{
+  "name": "promptfoo-rag-validation",
+  "version": "1.0.0",
+  "description": "LLM/RAG validation with Promptfoo — OpenAI vs Anthropic chatbot testing",
+  "scripts": {
+    "eval": "promptfoo eval",
+    "eval:happy": "promptfoo eval --tests tests/happy_path.yaml",
+    "eval:edge": "promptfoo eval --tests tests/edge_cases.yaml",
+    "eval:hallucination": "promptfoo eval --tests tests/hallucination.yaml",
+    "eval:safety": "promptfoo eval --tests tests/safety.yaml",
+    "view": "promptfoo view",
+    "test:unit": "pytest tests/test_rag_provider.py -v"
+  },
+  "devDependencies": {
+    "promptfoo": "^0.95.0"
+  }
+}
